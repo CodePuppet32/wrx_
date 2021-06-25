@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from matplotlib import style
 import numpy as np
+import os
 
 # Coins amount
 wrx_amount = 79.558112311
@@ -22,23 +23,27 @@ counter = 0
 invested = 75490
 x_lim = 1000
 
-# read records from the file
-f = open('C:\\Users\\rahul\\Desktop\\Data\\portfolio.txt', 'r')
-for record in f.readlines():
-    if 60000 > float(record[:8]) > 45000:
-        portfolio_record.append(float(record[:8]))
-        ts_record.append(record[-9:-1])
-f.close()
+# path for the local file
+local_file_path = 'C:\\Users\\rahul\\Desktop\\Data\\portfolio.txt'
 
-# calculate maximum port amount
-max_port = max(portfolio_record)
-if min(portfolio_record) > 0:
-    min_port = min(portfolio_record)
+if os.path.exists(local_file_path):
+    # read records from the file
+    f = open(local_file_path, 'r')
+    for record in f.readlines():
+        if 60000 > float(record[:8]) > 45000:
+            portfolio_record.append(float(record[:8]))
+            ts_record.append(record[-9:-1])
+    f.close()
 
-# calculate maximum port amount
-if len(portfolio_record) > x_lim:
-    del (portfolio_record[0:-x_lim])
-    del (ts_record[0:-x_lim])
+    # calculate maximum port amount
+    max_port = max(portfolio_record)
+    if min(portfolio_record) > 0:
+        min_port = min(portfolio_record)
+
+    # calculate maximum port amount
+    if len(portfolio_record) > x_lim:
+        del (portfolio_record[0:-x_lim])
+        del (ts_record[0:-x_lim])
 
 # setting figure
 style.use('dark_background')
@@ -114,7 +119,7 @@ def get_data():
         min_port = total_amount
 
     # write files to the local file
-    f = open('C:\\Users\\rahul\\Desktop\\Data\\portfolio.txt', 'a')
+    f = open(local_file_path, 'a')
     f.write(str(total_amount)[:8] + ' ')
     f.write(str(total_loss)[:8] + ' ')
     f.write(str(max_port)[:8] + ' ')
@@ -146,9 +151,9 @@ def get_yticks():
     for x in range(1, 6):
         if abs(cur_max_p - (min_p + max_min_diff * x)) < max_min_diff:
             y_tck.append(cur_max_p)
-        if abs(cur_p - (min_p + max_min_diff * x)) < max_min_diff and 100 < cur_p - min_p:
+        if abs(cur_p - (min_p + max_min_diff * x)) < max_min_diff and 100 < cur_p - min_p and cur_max_p - cur_p > 100:
             y_tck.append(cur_p)
-        elif abs(cur_p - (min_p + max_min_diff * x)) > 150 and abs(cur_max_p - (min_p + max_min_diff * x)) > 150:
+        if abs(cur_p - (min_p + max_min_diff * x)) > 150 and abs(cur_max_p - (min_p + max_min_diff * x)) > 150:
             y_tck.append(min_p + max_min_diff * x)
 
     y_tck.append(max_port)
@@ -209,7 +214,7 @@ def draw_data(i):
     max_line = plt.axhline(y=max_port, color='lightgreen', alpha=0.7, label='Max', linestyle='--', linewidth=0.8)
 
     # draw current portfolio line only when maximum portfolio is 100 bigger than current portfolio to avoid overlapping
-    if max_port - current_port > 100 < current_port - cur_graph_min_port:
+    if max_port - current_port > 100 < current_port - cur_graph_min_port and cur_graph_max_port - current_port > 100:
         cur_line = plt.axhline(y=current_port, color='#FF3333', label='Current', linestyle='-', alpha=0.4,
                                linewidth=0.6)
     else:
@@ -226,4 +231,3 @@ def draw_data(i):
 
 ani = animation.FuncAnimation(fig, draw_data, interval=4000)
 plt.show()
-
